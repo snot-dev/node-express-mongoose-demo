@@ -39,10 +39,14 @@ require('./config/passport')(passport);
 require('./config/express')(app, passport);
 require('./config/routes')(app, passport);
 
-connect()
+connect().then(() => {
+  listen();
+  
+  mongoose.connection
+  .on('connected', listen)
   .on('error', console.log)
-  .on('disconnected', connect)
-  .once('open', listen);
+  .on('disconnected', connect);
+});
 
 function listen () {
   if (app.get('env') === 'test') return;
@@ -52,5 +56,5 @@ function listen () {
 
 function connect () {
   var options = { server: { socketOptions: { keepAlive: 1 } } };
-  return mongoose.connect(config.db, options).connection;
+  return mongoose.connect(config.db, options);
 }
